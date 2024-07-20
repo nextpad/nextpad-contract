@@ -27,6 +27,7 @@ describe("BoardFactory", () => {
       fundedToken = await FundedToken.deploy();
       boardFactory = await BoardFactory.deploy(
          tolToken.target,
+         ethers.parseEther("1"),
          minimumTOLRequired
       );
       ocean = await Ocean.deploy(
@@ -50,13 +51,24 @@ describe("BoardFactory", () => {
             deadline,
             targetRaised,
             rewardRatePerTOL,
-            cid
+            cid,
+            {
+               value: ethers.parseEther("1"),
+            }
          );
          const filter = boardFactory.filters.LaunchpadCreated();
          const events = await boardFactory.queryFilter(filter);
          const launchpadAddress = events[0].args.launchpadAddress;
 
          expect(launchpadAddress).to.not.equal(ethers.ZeroAddress);
+      });
+
+      it("should set new base fee", async function () {
+         const newFee = ethers.parseEther("2");
+         await boardFactory.setBaseFee(newFee);
+
+         const baseFee = await boardFactory.baseFee();
+         expect(baseFee).to.equal(ethers.parseEther("2"));
       });
    });
 
@@ -77,7 +89,10 @@ describe("BoardFactory", () => {
             deadline,
             targetRaised,
             rewardRatePerTOL,
-            cid
+            cid,
+            {
+               value: ethers.parseEther("1"),
+            }
          );
          const filter = boardFactory.filters.LaunchpadCreated();
          const events = await boardFactory.queryFilter(filter);

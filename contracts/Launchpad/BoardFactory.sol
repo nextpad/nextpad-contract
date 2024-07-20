@@ -8,6 +8,7 @@ import "./IOcean.sol";
 contract BoardFactory is Ownable {
     address public tolToken;
     uint256 public minimumTOLRequired;
+    uint256 public baseFee;
 
     IOcean public ocean;
     uint256 public launchpadCount;
@@ -27,8 +28,13 @@ contract BoardFactory is Ownable {
      * @param _tolToken The address of the TOL token contract.
      * @param _minimumTOLRequired The minimum amount of TOL tokens required to activate a launchpad.
      */
-    constructor(address _tolToken, uint256 _minimumTOLRequired) {
+    constructor(
+        address _tolToken,
+        uint256 _baseFee,
+        uint256 _minimumTOLRequired
+    ) {
         tolToken = _tolToken;
+        baseFee = _baseFee;
         minimumTOLRequired = _minimumTOLRequired;
     }
 
@@ -61,7 +67,8 @@ contract BoardFactory is Ownable {
         uint256 _targetRaised,
         uint256 _rewardRatePerTOL,
         string memory _cid
-    ) external returns (uint256) {
+    ) public payable returns (uint256) {
+        require(msg.value >= baseFee, "Not enough fee");
         require(_minBuy > 0 && _maxBuy > _minBuy, "Invalid buy limits");
         require(_deadline > block.timestamp, "Invalid deadline");
 
@@ -97,5 +104,16 @@ contract BoardFactory is Ownable {
         );
 
         return id;
+    }
+
+    /**
+     * @dev Function to set the base fee for creating a new launchpad.
+     * Can only be called by the owner of the contract.
+     * @param value The new base fee value.
+     * @return A boolean indicating whether the operation succeeded.
+     */
+    function setBaseFee(uint256 value) external onlyOwner returns (bool) {
+        baseFee = value;
+        return true;
     }
 }
