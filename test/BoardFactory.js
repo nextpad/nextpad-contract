@@ -118,8 +118,8 @@ describe("BoardFactory", () => {
             .connect(addr1)
             .buyPresale({ value: ethers.parseEther("5") });
 
-         const contribution = await board.getContribution(addr1.address);
-         expect(contribution).to.equal(ethers.parseEther("5"));
+         const allocation = await board.getAllocation(addr1.address);
+         expect(allocation).to.equal(ethers.parseEther((5 * rates).toString()));
       });
 
       it("Should allow token withdrawal after presale finalized", async () => {

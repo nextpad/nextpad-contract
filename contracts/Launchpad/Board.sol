@@ -17,16 +17,17 @@ contract Board is Ownable {
         Status status;
         uint256 minBuy;
         uint256 maxBuy;
+        uint256 maxAllocation;
         uint256 rates;
         uint256 deadline;
         string cid;
         uint256 totalRaised;
         uint256 targetRaised;
         uint256 totalTOLPlaced;
-        mapping(address => uint256) contributions;
         mapping(address => uint256) tolContributions;
     }
 
+    mapping(address => uint256) allocation;
     IERC20 public tolToken;
     IERC20 public fundedToken;
     uint256 public minimumTOLRequired;
@@ -92,8 +93,12 @@ contract Board is Ownable {
      * @param target The address to query the contribution for.
      * @return The contribution amount in ETH.
      */
-    function getContribution(address target) external view returns (uint256) {
-        return launchpad.contributions[target];
+    function getAllocation(address target) external view returns (uint256) {
+        return allocation[target];
+    }
+
+    function getRates() external view returns (uint256) {
+        return launchpad.rates;
     }
 
     /**
@@ -110,10 +115,7 @@ contract Board is Ownable {
      * @return The token amount.
      */
     function getTokenAmount(address target) public view returns (uint256) {
-        uint256 tokenAmount = (launchpad.contributions[target] *
-            launchpad.rates *
-            (10 ** 18)) / (10 ** 18);
-        return tokenAmount;
+        return allocation[target];
     }
 
     /**
@@ -160,12 +162,12 @@ contract Board is Ownable {
             "Invalid amount"
         );
         require(
-            launchpad.contributions[msg.sender] + msg.value <= launchpad.maxBuy,
-            "Exceeds max buy limit"
+            allocation[msg.sender] <= launchpad.maxAllocation,
+            "Exceeds max allocation"
         );
 
-        launchpad.contributions[msg.sender] += msg.value;
         launchpad.totalRaised += msg.value;
+        allocation[msg.sender] += msg.value * launchpad.rates;
 
         emit PresaleBought(msg.sender, msg.value);
     }
@@ -192,7 +194,7 @@ contract Board is Ownable {
      */
     function refund() external {
         require(launchpad.status == Status.Failed, "Presale is not failed");
-        uint256 amount = launchpad.contributions[msg.sender];
+        uint256 amount = allocation[msg.sender] / launchpad.rates;
         require(amount > 0, "No contribution found");
 
         payable(msg.sender).transfer(amount);
@@ -206,10 +208,10 @@ contract Board is Ownable {
      */
     function emergencyWithdraw() external {
         require(launchpad.status == Status.Active, "Presale is not active");
-        uint256 amount = launchpad.contributions[msg.sender];
+        uint256 amount = allocation[msg.sender] / launchpad.rates;
         require(amount > 0, "No contribution found");
 
-        launchpad.contributions[msg.sender] = 0;
+        allocation[msg.sender] = 0;
         launchpad.totalRaised -= amount;
 
         payable(msg.sender).transfer(amount);
