@@ -58,7 +58,7 @@ contract TokenFactory is Ownable {
         string memory name,
         string memory symbol,
         uint256 initialSupply
-    ) public payable {
+    ) public payable returns (address) {
         require(msg.value >= baseFee, "Fee not enough");
 
         // Create a new ERC20 token
@@ -73,6 +73,8 @@ contract TokenFactory is Ownable {
         payable(treasury).transfer(msg.value);
 
         emit TokenCreated(address(newToken));
+
+        return address(newToken);
     }
 
     /**
