@@ -1,6 +1,6 @@
 # TOL Contract
 
-TOL Contract is an open-source project that serves as the core smart contract for the TOL (Token Offering Launchpad) project, designed to facilitate decentralized application (DApp) launches. This project utilizes the Hardhat framework and is written in Solidity.
+TOL Contract is an open-source project that serves as the core smart contract for The Open Launchpad project, designed to facilitate decentralized application (DApp) launches. This project utilizes the Hardhat framework and is written in Solidity.
 
 ## Prerequisites
 
