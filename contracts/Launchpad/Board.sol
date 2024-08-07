@@ -30,6 +30,7 @@ contract Board is Ownable {
     mapping(address => uint256) allocation;
     IERC20 public tolToken;
     IERC20 public fundedToken;
+    uint256 public startDate;
     uint256 public minimumTOLRequired;
     uint256 public minimumHoldTime;
     uint256 public rewardRatePerTOL;
@@ -131,6 +132,7 @@ contract Board is Ownable {
             uint256,
             uint256,
             uint256,
+            uint256,
             string memory,
             uint256,
             uint256,
@@ -142,6 +144,7 @@ contract Board is Ownable {
             launchpad.minBuy,
             launchpad.maxBuy,
             launchpad.rates,
+            startDate,
             launchpad.deadline,
             launchpad.cid,
             launchpad.totalRaised,
@@ -155,6 +158,7 @@ contract Board is Ownable {
      * Emits a {PresaleBought} event.
      */
     function buyPresale() external payable {
+        require(block.timestamp >= startDate, "Presale has not started yet");
         require(launchpad.status == Status.Active, "Presale is not active");
         require(block.timestamp < launchpad.deadline, "Presale has ended");
         require(
@@ -269,6 +273,7 @@ contract Board is Ownable {
      * @param _amount The amount of TOL tokens to place.
      */
     function placeTOL(uint256 _amount) external {
+        require(block.timestamp >= startDate, "Presale has not started yet");
         require(launchpad.status == Status.Pending, "Launchpad is not pending");
         uint256 firstHold = tolToken.getHoldingTime(msg.sender);
         require(
@@ -286,6 +291,10 @@ contract Board is Ownable {
         }
 
         emit TOLPlaced(msg.sender, _amount);
+    }
+
+    function setStartDate(uint256 _startDate) external {
+        startDate = _startDate;
     }
 
     /**

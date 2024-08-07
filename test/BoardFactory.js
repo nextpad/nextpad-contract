@@ -8,6 +8,7 @@ describe("BoardFactory", () => {
    const minBuy = ethers.parseEther("1");
    const maxBuy = ethers.parseEther("10");
    const rates = 1000;
+   let startDate;
    let deadline; // 1 day from now
    const targetRaised = ethers.parseEther("10");
    const rewardRatePerTOL = 10;
@@ -16,6 +17,8 @@ describe("BoardFactory", () => {
 
    beforeEach(async () => {
       [owner, addr1, addr2] = await ethers.getSigners();
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      startDate = currentTimestamp + 60 * 60;
       deadline = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
 
       TOLToken = await ethers.getContractFactory("TOLToken");
@@ -38,6 +41,7 @@ describe("BoardFactory", () => {
 
       // Fund owner with initial tokens
       await tolToken.mint(owner.address, ethers.parseEther("100000"));
+      //
    });
 
    describe("BoardFactory", () => {
@@ -78,6 +82,7 @@ describe("BoardFactory", () => {
          // getting timestamp
          const blockNumBefore = await ethers.provider.getBlockNumber();
          const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+         startDate = blockBefore.timestamp + 60 * 60;
          deadline = blockBefore.timestamp + 60 * 60 * 24;
 
          await boardFactory.updateOceanInstance(ocean.target);
@@ -104,8 +109,37 @@ describe("BoardFactory", () => {
             launchpadAddress,
             ethers.parseEther("1000000000")
          );
-         // await tolToken.approve(launchpadAddress, ethers.parseEther("1000"));
-         // await board.placeTOL(ethers.parseEther("1000"));
+         await board.setStartDate(startDate);
+      });
+
+      it("Should not allow buying presale before start date", async () => {
+         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
+         await tolToken
+            .connect(addr1)
+            .approve(board.target, ethers.parseEther("1000"));
+
+         await expect(
+            board.connect(addr1).buyPresale({ value: ethers.parseEther("5") })
+         ).to.be.revertedWith("Presale has not started yet");
+      });
+
+      it("Should allow buying presale after start date", async () => {
+         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
+         await tolToken
+            .connect(addr1)
+            .approve(board.target, ethers.parseEther("1000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
+         await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
+         await board
+            .connect(addr1)
+            .buyPresale({ value: ethers.parseEther("5") });
+
+         const allocation = await board.getAllocation(addr1.address);
+         expect(allocation).to.equal(ethers.parseEther((5 * rates).toString()));
       });
 
       it("Should allow buying presale", async () => {
@@ -113,6 +147,11 @@ describe("BoardFactory", () => {
          await tolToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
          await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
          await board
             .connect(addr1)
@@ -127,6 +166,11 @@ describe("BoardFactory", () => {
          await tolToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("10000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
          await board.connect(addr1).placeTOL(ethers.parseEther("10000"));
          await board
             .connect(addr1)
@@ -149,6 +193,11 @@ describe("BoardFactory", () => {
          await tolToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
          await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
          await board
             .connect(addr1)
@@ -169,6 +218,11 @@ describe("BoardFactory", () => {
          await tolToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
          await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
          await board
             .connect(addr1)

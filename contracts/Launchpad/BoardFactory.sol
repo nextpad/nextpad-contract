@@ -23,11 +23,6 @@ contract BoardFactory is Ownable {
         string cid
     );
 
-    /**
-     * @dev Initializes the contract with the provided TOL token address and minimum TOL required.
-     * @param _tolToken The address of the TOL token contract.
-     * @param _minimumTOLRequired The minimum amount of TOL tokens required to activate a launchpad.
-     */
     constructor(
         address _tolToken,
         uint256 _baseFee,
@@ -38,26 +33,10 @@ contract BoardFactory is Ownable {
         minimumTOLRequired = _minimumTOLRequired;
     }
 
-    /**
-     * @dev Updates the Ocean contract instance.
-     * @param _ocean The address of the new Ocean contract.
-     */
     function updateOceanInstance(address _ocean) external onlyOwner {
         ocean = IOcean(_ocean);
     }
 
-    /**
-     * @dev Creates a new launchpad with the specified parameters.
-     * @param _fundedToken The address of the funded token contract.
-     * @param _minBuy The minimum amount of ETH required to participate in the presale.
-     * @param _maxBuy The maximum amount of ETH allowed to participate in the presale.
-     * @param _rates The conversion rate from ETH to funded tokens.
-     * @param _deadline The deadline for the presale.
-     * @param _targetRaised The target amount of ETH to be raised in the presale.
-     * @param _rewardRatePerTOL The reward rate per TOL token placed.
-     * @param _cid The content identifier for additional launchpad information.
-     * @return The ID of the created launchpad stored in the Ocean contract.
-     */
     function createLaunchpad(
         address _fundedToken,
         uint256 _minBuy,
@@ -70,7 +49,6 @@ contract BoardFactory is Ownable {
     ) public payable returns (uint256) {
         require(msg.value >= baseFee, "Not enough fee");
         require(_minBuy > 0 && _maxBuy > _minBuy, "Invalid buy limits");
-        require(_deadline > block.timestamp, "Invalid deadline");
 
         launchpadCount++;
         Board newLaunchpad = new Board(
@@ -106,12 +84,6 @@ contract BoardFactory is Ownable {
         return id;
     }
 
-    /**
-     * @dev Function to set the base fee for creating a new launchpad.
-     * Can only be called by the owner of the contract.
-     * @param value The new base fee value.
-     * @return A boolean indicating whether the operation succeeded.
-     */
     function setBaseFee(uint256 value) external onlyOwner returns (bool) {
         baseFee = value;
         return true;
