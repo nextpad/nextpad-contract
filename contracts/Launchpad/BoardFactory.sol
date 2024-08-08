@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "./Board.sol";
 import "../Common/Ownable.sol";
 import "./IOcean.sol";
+import "../ERC20/IERC20.sol";
 
 contract BoardFactory is Ownable {
     address public tolToken;
@@ -42,10 +43,12 @@ contract BoardFactory is Ownable {
         uint256 _minBuy,
         uint256 _maxBuy,
         uint256 _rates,
+        uint256 _startSale,
         uint256 _deadline,
         uint256 _targetRaised,
         uint256 _rewardRatePerTOL,
-        string memory _cid
+        string memory _cid,
+        uint256 _allocation
     ) public payable returns (uint256) {
         require(msg.value >= baseFee, "Not enough fee");
         require(_minBuy > 0 && _maxBuy > _minBuy, "Invalid buy limits");
@@ -70,6 +73,13 @@ contract BoardFactory is Ownable {
             address(newLaunchpad),
             _cid
         );
+
+        IERC20(_fundedToken).transferFrom(
+            msg.sender,
+            address(newLaunchpad),
+            _allocation
+        );
+        newLaunchpad.setStartDate(_startSale);
 
         emit LaunchpadCreated(
             launchpadCount,

@@ -41,21 +41,25 @@ describe("BoardFactory", () => {
 
       // Fund owner with initial tokens
       await tolToken.mint(owner.address, ethers.parseEther("100000"));
-      //
    });
 
    describe("BoardFactory", () => {
       it("Should create a new launchpad", async () => {
          await boardFactory.updateOceanInstance(ocean.target);
+
+         await fundedToken.approve(boardFactory.target, ethers.MaxUint256);
+         await fundedToken.mint(owner.address, ethers.parseEther("1000000"));
          const tx = await boardFactory.createLaunchpad(
             fundedToken.target,
             minBuy,
             maxBuy,
             rates,
+            startDate,
             deadline,
             targetRaised,
             rewardRatePerTOL,
             cid,
+            ethers.parseEther("40000"),
             {
                value: ethers.parseEther("1"),
             }
@@ -86,15 +90,20 @@ describe("BoardFactory", () => {
          deadline = blockBefore.timestamp + 60 * 60 * 24;
 
          await boardFactory.updateOceanInstance(ocean.target);
+
+         await fundedToken.approve(boardFactory.target, ethers.MaxUint256);
+         await fundedToken.mint(owner.address, ethers.parseEther("1000000"));
          const tx = await boardFactory.createLaunchpad(
             fundedToken.target,
             minBuy,
             maxBuy,
             rates,
+            startDate,
             deadline,
             targetRaised,
             rewardRatePerTOL,
             cid,
+            ethers.parseEther("40000"),
             {
                value: ethers.parseEther("1"),
             }
@@ -104,12 +113,6 @@ describe("BoardFactory", () => {
          const launchpadAddress = events[0].args.launchpadAddress;
 
          board = await ethers.getContractAt("Board", launchpadAddress);
-
-         await fundedToken.mint(
-            launchpadAddress,
-            ethers.parseEther("1000000000")
-         );
-         await board.setStartDate(startDate);
       });
 
       it("Should not allow buying presale before start date", async () => {
@@ -171,13 +174,10 @@ describe("BoardFactory", () => {
          await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
          await network.provider.send("evm_mine");
 
-         await board.connect(addr1).placeTOL(ethers.parseEther("10000"));
+         await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
          await board
             .connect(addr1)
             .buyPresale({ value: ethers.parseEther("10") });
-
-         // Mint funded tokens to the board for withdrawal
-         await fundedToken.mint(board.target, ethers.parseEther("10000"));
 
          // Finalize the presale
          await network.provider.send("evm_increaseTime", [60 * 60 * 24 + 2]); // Move forward in time
@@ -185,7 +185,7 @@ describe("BoardFactory", () => {
 
          await board.connect(addr1).withdrawToken();
          const fundedBalance = await fundedToken.balanceOf(addr1.address);
-         expect(fundedBalance).to.equal(ethers.parseEther("110000"));
+         expect(fundedBalance).to.equal(ethers.parseEther("20000"));
       });
 
       it("Should allow refund if presale fails", async () => {
