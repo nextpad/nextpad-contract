@@ -115,6 +115,39 @@ describe("BoardFactory", () => {
          board = await ethers.getContractAt("Board", launchpadAddress);
       });
 
+      it("Should allow voting launchpad", async () => {
+         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
+         await tolToken
+            .connect(addr1)
+            .approve(board.target, ethers.parseEther("1000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
+         await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
+
+         const balance = await tolToken.balanceOf(addr1.address);
+         expect(balance).to.equal(ethers.parseEther("0"));
+      });
+
+      it("Should not allow voting launchpad for less than minimum", async () => {
+         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
+         await tolToken
+            .connect(addr1)
+            .approve(board.target, ethers.parseEther("1000"));
+
+         // Move time forward to after start date
+         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
+         await network.provider.send("evm_mine");
+
+         await expect(
+            board.connect(addr1).placeTOL(ethers.parseEther("10"))
+         ).to.be.revertedWith("The amount is not enough");
+         const balance = await tolToken.balanceOf(addr1.address);
+         expect(balance).to.equal(ethers.parseEther("1000"));
+      });
+
       it("Should not allow buying presale before start date", async () => {
          await tolToken.mint(addr1.address, ethers.parseEther("1000"));
          await tolToken

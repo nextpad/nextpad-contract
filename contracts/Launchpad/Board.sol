@@ -24,9 +24,9 @@ contract Board is Ownable {
         uint256 totalRaised;
         uint256 targetRaised;
         uint256 totalTOLPlaced;
-        mapping(address => uint256) tolContributions;
     }
 
+    mapping(address => uint256) tolContributions;
     mapping(address => uint256) allocation;
     IERC20 public tolToken;
     IERC20 public fundedToken;
@@ -258,7 +258,7 @@ contract Board is Ownable {
             for (uint256 i = 0; i < totalVoter; i++) {
                 fundedToken.transfer(
                     voters[i],
-                    launchpad.tolContributions[voters[i]] * rewardRatePerTOL
+                    tolContributions[voters[i]] * rewardRatePerTOL
                 );
             }
         }
@@ -280,9 +280,10 @@ contract Board is Ownable {
             block.timestamp >= firstHold + minimumHoldTime,
             "TOL hold time not met"
         );
+        require(_amount >= 20e18, "The amount is not enough");
 
         tolToken.transferFrom(msg.sender, address(this), _amount);
-        launchpad.tolContributions[msg.sender] += _amount;
+        tolContributions[msg.sender] += _amount;
         launchpad.totalTOLPlaced += _amount;
         voters.push(msg.sender);
 
