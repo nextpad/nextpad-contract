@@ -26,8 +26,9 @@ contract Board is Ownable {
         uint256 totalTOLPlaced;
     }
 
-    mapping(address => uint256) tolContributions;
-    mapping(address => uint256) allocation;
+    uint32 public totalContributors;
+    mapping(address => uint256) public tolContributions;
+    mapping(address => uint256) public allocation;
     IERC20 public tolToken;
     IERC20 public fundedToken;
     uint256 public startDate;
@@ -166,12 +167,17 @@ contract Board is Ownable {
             "Invalid amount"
         );
         require(
+            launchpad.totalRaised + msg.value <= launchpad.targetRaised,
+            "Exceeds target raised reached"
+        );
+        require(
             allocation[msg.sender] <= launchpad.maxAllocation,
             "Exceeds max allocation"
         );
 
         launchpad.totalRaised += msg.value;
         allocation[msg.sender] += msg.value * launchpad.rates;
+        totalContributors += 1;
 
         emit PresaleBought(msg.sender, msg.value);
     }

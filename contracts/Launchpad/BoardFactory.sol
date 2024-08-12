@@ -98,4 +98,9 @@ contract BoardFactory is Ownable {
         baseFee = value;
         return true;
     }
+
+    function setTOLRequired(uint256 value) external onlyOwner returns (bool) {
+        minimumTOLRequired = value;
+        return true;
+    }
 }

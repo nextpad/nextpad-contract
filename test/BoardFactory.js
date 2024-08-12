@@ -175,26 +175,9 @@ describe("BoardFactory", () => {
             .buyPresale({ value: ethers.parseEther("5") });
 
          const allocation = await board.getAllocation(addr1.address);
+         const contributors = await board.totalContributors();
          expect(allocation).to.equal(ethers.parseEther((5 * rates).toString()));
-      });
-
-      it("Should allow buying presale", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
-            .connect(addr1)
-            .approve(board.target, ethers.parseEther("1000"));
-
-         // Move time forward to after start date
-         await network.provider.send("evm_increaseTime", [60 * 60 + 1]); // 1 hour and 1 second
-         await network.provider.send("evm_mine");
-
-         await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
-         await board
-            .connect(addr1)
-            .buyPresale({ value: ethers.parseEther("5") });
-
-         const allocation = await board.getAllocation(addr1.address);
-         expect(allocation).to.equal(ethers.parseEther((5 * rates).toString()));
+         expect(contributors).to.equal("1");
       });
 
       it("Should allow token withdrawal after presale finalized", async () => {
