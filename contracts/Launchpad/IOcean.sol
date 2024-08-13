@@ -11,26 +11,33 @@ interface IOcean {
 
     /**
      * @dev Boosts a project by spending TOL tokens
-     * @param _projectId The ID of the project to boost
+     * @param _ca The ID of the project to boost
      * @param _tolAmount The amount of TOL tokens to spend on boosting
      */
-    function boostProject(uint256 _projectId, uint256 _tolAmount) external;
+    function boostProject(address _ca, uint256 _tolAmount) external;
 
     /**
      * @dev Terminates a project
-     * @param _projectId The ID of the project to terminate
+     * @param _ca The ID of the project to terminate
      */
-    function terminateProject(uint256 _projectId) external;
+    function terminateProject(address _ca) external;
 
     /**
      * @dev Stores a new project in the contract
      * @param _owner Address of the project owner
-     * @param _contractAddress Address of the project's contract
      * @param _cid IPFS CID of the project's information
      */
     function storeProject(
         address _owner,
-        address _contractAddress,
-        string memory _cid
-    ) external returns (uint256);
+        address _ca,
+        string memory _cid,
+        uint256 _totalAllocation
+    ) external returns (bool);
+
+    /**
+     * @dev Update allocated of launchpad to keep tracking
+     * @param amount amount of token
+     * @param add added or not
+     */
+    function updateAllocated(uint256 amount, bool add) external;
 }

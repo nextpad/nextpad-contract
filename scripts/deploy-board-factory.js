@@ -10,7 +10,7 @@ async function main() {
    const deployer = accounts[0].address;
    const balance = await hre.ethers.provider.getBalance(deployer);
    console.log(`Deploy from account: ${deployer}`);
-   console.log(`Balance: ${hre.ethers.formatEther(balance)}`);
+   console.log(`Balance: ${hre.ethers.formatEther(balance)}\n`);
 
    // Deploy Board Factory
    const BoardFactory = await hre.ethers.getContractFactory("BoardFactory");
@@ -19,15 +19,34 @@ async function main() {
       hre.ethers.parseEther(baseFee),
       hre.ethers.parseEther(requiredTOL)
    );
-   console.log("BoardFactory contract:", factory.target);
 
    // Deploy Ocean
    const Ocean = await hre.ethers.getContractFactory("Ocean");
    const ocean = await Ocean.deploy(factory.target, TOL, deployer);
-   console.log("Ocean contract:", ocean.target);
 
    // update ocean address
    await factory.updateOceanInstance(ocean.target);
+
+   const tx = factory.deploymentTransaction();
+   const tx2 = ocean.deploymentTransaction();
+   const receipt = await hre.ethers.provider.getTransactionReceipt(tx.hash);
+   const receipt2 = await hre.ethers.provider.getTransactionReceipt(tx2.hash);
+
+   console.log("======= BoardFactory =======");
+   console.log("Gas used:", parseInt(receipt.gasUsed));
+   console.log(
+      "Total fee:",
+      hre.ethers.formatEther(receipt.gasUsed * receipt.gasPrice)
+   );
+   console.log("Contract address:", factory.target, "\n");
+
+   console.log("====== Ocean =======");
+   console.log("Gas used:", parseInt(receipt2.gasUsed));
+   console.log(
+      "Total fee:",
+      hre.ethers.formatEther(receipt2.gasUsed * receipt2.gasPrice)
+   );
+   console.log("Contract address:", ocean.target);
 }
 
 main()

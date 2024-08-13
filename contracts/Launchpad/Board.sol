@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../Common/Ownable.sol";
 import "../ERC20/IERC20.sol";
+import "./IOcean.sol";
 
 contract Board is Ownable {
     enum Status {
@@ -29,13 +30,17 @@ contract Board is Ownable {
     uint32 public totalContributors;
     mapping(address => uint256) public tolContributions;
     mapping(address => uint256) public allocation;
+    address[] public voters;
+
     IERC20 public tolToken;
     IERC20 public fundedToken;
+    IOcean public ocean;
+    address factory;
+
     uint256 public startDate;
     uint256 public minimumTOLRequired;
     uint256 public minimumHoldTime;
     uint256 public rewardRatePerTOL;
-    address[] public voters;
 
     Launchpad public launchpad;
 
@@ -49,45 +54,47 @@ contract Board is Ownable {
 
     /**
      * @dev Initializes the contract with the provided parameters and sets the initial state of the launchpad.
-     * @param _owner The address of the contract owner.
-     * @param _tolToken The address of the TOL token contract.
-     * @param _fundedToken The address of the funded token contract.
-     * @param _minimumTOLRequired The minimum amount of TOL tokens required to activate the launchpad.
-     * @param _minBuy The minimum amount of ETH required to participate in the presale.
-     * @param _maxBuy The maximum amount of ETH allowed to participate in the presale.
-     * @param _rates The conversion rate from ETH to funded tokens.
-     * @param _deadline The deadline for the presale.
-     * @param _targetRaised The target amount of ETH to be raised in the presale.
-     * @param _rewardRatePerTOL The reward rate per TOL token placed.
+     * @param data1 address array of data
+     * @param data2 uint array of data
      * @param _cid The content identifier for additional launchpad information.
      */
     constructor(
-        address _owner,
-        address _tolToken,
-        address _fundedToken,
-        uint256 _minimumTOLRequired,
-        uint256 _minBuy,
-        uint256 _maxBuy,
-        uint256 _rates,
-        uint256 _deadline,
-        uint256 _targetRaised,
-        uint256 _rewardRatePerTOL,
+        // data1[0] _owner,
+        // data1[1] _tolToken,
+        // data1[2] _fundedToken,
+        // data1[3] _ocean,
+
+        // data2[0] _minimumTOLRequired,
+        // data2[1] _minBuy,
+        // data2[2] _maxBuy,
+        // data2[3] _rates,
+        // data2[4] _deadline,
+        // data2[5] _targetRaised,
+        // data2[6] _rewardRatePerTOL,
+        // data2[7] _startDate,
+
+        address[4] memory data1,
+        uint256[8] memory data2,
         string memory _cid
     ) {
-        transferOwnership(_owner);
-        tolToken = IERC20(_tolToken);
-        fundedToken = IERC20(_fundedToken);
-        minimumTOLRequired = _minimumTOLRequired;
+        transferOwnership(data1[0]);
+        tolToken = IERC20(data1[1]);
+        fundedToken = IERC20(data1[2]);
+        factory = msg.sender;
+        ocean = IOcean(data1[3]);
+
+        minimumTOLRequired = data2[0];
         minimumHoldTime = tolToken.minimumHoldingTime();
 
         launchpad.status = Status.Pending;
-        launchpad.minBuy = _minBuy;
-        launchpad.maxBuy = _maxBuy;
-        launchpad.rates = _rates;
-        launchpad.deadline = _deadline;
-        launchpad.targetRaised = _targetRaised;
+        launchpad.minBuy = data2[1];
+        launchpad.maxBuy = data2[2];
+        launchpad.rates = data2[3];
+        launchpad.deadline = data2[4];
+        launchpad.targetRaised = data2[5];
         launchpad.cid = _cid;
-        rewardRatePerTOL = _rewardRatePerTOL;
+        rewardRatePerTOL = data2[6];
+        startDate = data2[7];
     }
 
     /**
@@ -175,9 +182,11 @@ contract Board is Ownable {
             "Exceeds max allocation"
         );
 
+        uint256 amount = msg.value * launchpad.rates;
         launchpad.totalRaised += msg.value;
-        allocation[msg.sender] += msg.value * launchpad.rates;
+        allocation[msg.sender] += amount;
         totalContributors += 1;
+        ocean.updateAllocated(amount, true);
 
         emit PresaleBought(msg.sender, msg.value);
     }
@@ -223,6 +232,8 @@ contract Board is Ownable {
 
         allocation[msg.sender] = 0;
         launchpad.totalRaised -= amount;
+        totalContributors -= 1;
+        ocean.updateAllocated(allocation[msg.sender], false);
 
         payable(msg.sender).transfer(amount);
 
@@ -298,10 +309,6 @@ contract Board is Ownable {
         }
 
         emit TOLPlaced(msg.sender, _amount);
-    }
-
-    function setStartDate(uint256 _startDate) external {
-        startDate = _startDate;
     }
 
     /**

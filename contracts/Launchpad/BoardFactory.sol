@@ -49,29 +49,31 @@ contract BoardFactory is Ownable {
         uint256 _rewardRatePerTOL,
         string memory _cid,
         uint256 _allocation
-    ) public payable returns (uint256) {
+    ) public payable returns (bool) {
         require(msg.value >= baseFee, "Not enough fee");
         require(_minBuy > 0 && _maxBuy > _minBuy, "Invalid buy limits");
 
         launchpadCount++;
         Board newLaunchpad = new Board(
-            msg.sender,
-            tolToken,
-            _fundedToken,
-            minimumTOLRequired,
-            _minBuy,
-            _maxBuy,
-            _rates,
-            _deadline,
-            _targetRaised,
-            _rewardRatePerTOL,
+            [msg.sender, tolToken, _fundedToken, address(ocean)],
+            [
+                minimumTOLRequired,
+                _minBuy,
+                _maxBuy,
+                _rates,
+                _deadline,
+                _targetRaised,
+                _rewardRatePerTOL,
+                _startSale
+            ],
             _cid
         );
 
-        uint256 id = ocean.storeProject(
+        ocean.storeProject(
             msg.sender,
             address(newLaunchpad),
-            _cid
+            _cid,
+            _allocation
         );
 
         IERC20(_fundedToken).transferFrom(
@@ -79,7 +81,6 @@ contract BoardFactory is Ownable {
             address(newLaunchpad),
             _allocation
         );
-        newLaunchpad.setStartDate(_startSale);
 
         emit LaunchpadCreated(
             launchpadCount,
@@ -91,7 +92,7 @@ contract BoardFactory is Ownable {
             _cid
         );
 
-        return id;
+        return true;
     }
 
     function setBaseFee(uint256 value) external onlyOwner returns (bool) {
