@@ -1,10 +1,8 @@
-require("dotenv").config();
+const getDeployer = require("./deployer");
 const hre = require("hardhat");
 
 async function main() {
-   const accounts = await hre.ethers.getSigners();
-   const deployer = accounts[0].address;
-   console.log(`Deploy from account: ${deployer}`);
+   const deployer = await getDeployer();
 
    const TOLToken = await hre.ethers.deployContract("TOLToken");
    await TOLToken.waitForDeployment();
@@ -18,7 +16,27 @@ async function main() {
    );
    // Mint tokens to the Faucet contract
    await TOLToken.mint(faucet.target, ethers.parseEther("100000"));
-   console.log("Faucet contract: ", faucet.target);
+
+   const tx = TOLToken.deploymentTransaction();
+   const tx2 = faucet.deploymentTransaction();
+   const receipt = await hre.ethers.provider.getTransactionReceipt(tx.hash);
+   const receipt2 = await hre.ethers.provider.getTransactionReceipt(tx2.hash);
+
+   console.log("======= TOLToken =======");
+   console.log("Gas used:", parseInt(receipt.gasUsed).toLocaleString());
+   console.log(
+      "Total fee:",
+      hre.ethers.formatEther(receipt.gasUsed * receipt.gasPrice)
+   );
+   console.log("Contract address:", TOLToken.target, "\n");
+
+   console.log("====== Faucet =======");
+   console.log("Gas used:", parseInt(receipt2.gasUsed).toLocaleString());
+   console.log(
+      "Total fee:",
+      hre.ethers.formatEther(receipt2.gasUsed * receipt2.gasPrice)
+   );
+   console.log("Contract address:", faucet.target);
 }
 
 main()

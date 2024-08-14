@@ -1,14 +1,21 @@
-require("dotenv").config();
+const getDeployer = require("./deployer");
 const hre = require("hardhat");
 
 async function main() {
-   const accounts = await hre.ethers.getSigners();
-   const deployer = accounts[0].address;
-   console.log(`Deploy from account: ${deployer}`);
+   const deployer = await getDeployer();
 
    // Deploy Locker contract
    const Locker = await ethers.getContractFactory("Locker");
    const locker = await Locker.deploy();
+
+   const tx = locker.deploymentTransaction();
+   const receipt = await hre.ethers.provider.getTransactionReceipt(tx.hash);
+
+   console.log("Gas used:", parseInt(receipt.gasUsed).toLocaleString());
+   console.log(
+      "Total fee:",
+      hre.ethers.formatEther(receipt.gasUsed * receipt.gasPrice)
+   );
    console.log("Locker contract:", locker.target);
 }
 

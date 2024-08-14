@@ -35,7 +35,6 @@ contract Board is Ownable {
     IERC20 public tolToken;
     IERC20 public fundedToken;
     IOcean public ocean;
-    address factory;
 
     uint256 public startDate;
     uint256 public minimumTOLRequired;
@@ -80,7 +79,6 @@ contract Board is Ownable {
         transferOwnership(data1[0]);
         tolToken = IERC20(data1[1]);
         fundedToken = IERC20(data1[2]);
-        factory = msg.sender;
         ocean = IOcean(data1[3]);
 
         minimumTOLRequired = data2[0];

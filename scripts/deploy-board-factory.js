@@ -1,4 +1,4 @@
-require("dotenv").config();
+const getDeployer = require("./deployer");
 const hre = require("hardhat");
 
 const TOL = "0x51eF9Ae8f376A39A8fd18D96888c7Dc05C703747";
@@ -6,11 +6,7 @@ const baseFee = "0.1";
 const requiredTOL = "50";
 
 async function main() {
-   const accounts = await hre.ethers.getSigners();
-   const deployer = accounts[0].address;
-   const balance = await hre.ethers.provider.getBalance(deployer);
-   console.log(`Deploy from account: ${deployer}`);
-   console.log(`Balance: ${hre.ethers.formatEther(balance)}\n`);
+   const deployer = await getDeployer();
 
    // Deploy Board Factory
    const BoardFactory = await hre.ethers.getContractFactory("BoardFactory");
@@ -33,7 +29,7 @@ async function main() {
    const receipt2 = await hre.ethers.provider.getTransactionReceipt(tx2.hash);
 
    console.log("======= BoardFactory =======");
-   console.log("Gas used:", parseInt(receipt.gasUsed));
+   console.log("Gas used:", parseInt(receipt.gasUsed).toLocaleString());
    console.log(
       "Total fee:",
       hre.ethers.formatEther(receipt.gasUsed * receipt.gasPrice)
@@ -41,7 +37,7 @@ async function main() {
    console.log("Contract address:", factory.target, "\n");
 
    console.log("====== Ocean =======");
-   console.log("Gas used:", parseInt(receipt2.gasUsed));
+   console.log("Gas used:", parseInt(receipt2.gasUsed).toLocaleString());
    console.log(
       "Total fee:",
       hre.ethers.formatEther(receipt2.gasUsed * receipt2.gasPrice)

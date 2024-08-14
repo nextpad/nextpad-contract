@@ -1,16 +1,24 @@
-require("dotenv").config();
+const getDeployer = require("./deployer");
 const hre = require("hardhat");
 
 async function main() {
-   const accounts = await hre.ethers.getSigners();
-   const deployer = accounts[0].address;
-   console.log(`Deploy from account: ${deployer}`);
+   const deployer = await getDeployer();
 
    const TokenFactory = await ethers.getContractFactory("TokenFactory");
    const tokenFactory = await TokenFactory.deploy(deployer);
+
    // Set the base fee for creating a token
    const baseFee = ethers.parseEther("0.1");
    await tokenFactory.setBaseFee(baseFee);
+
+   const tx = tokenFactory.deploymentTransaction();
+   const receipt = await hre.ethers.provider.getTransactionReceipt(tx.hash);
+
+   console.log("Gas used:", parseInt(receipt.gasUsed).toLocaleString());
+   console.log(
+      "Total fee:",
+      hre.ethers.formatEther(receipt.gasUsed * receipt.gasPrice)
+   );
    console.log("Token Factory contract:", tokenFactory.target);
 }
 
