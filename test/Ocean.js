@@ -2,18 +2,18 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("Ocean", function () {
-   let Ocean, ocean, TOLToken, tolToken, owner, addr1, addr2;
+   let Ocean, ocean, NXPToken, nxpToken, owner, addr1, addr2;
 
    beforeEach(async function () {
       [owner, addr1, addr2] = await ethers.getSigners();
 
-      // Deploy mock TOLToken
-      const TOLToken = await ethers.getContractFactory("TOLToken");
-      tolToken = await TOLToken.deploy();
+      // Deploy mock NXPToken
+      const NXPToken = await ethers.getContractFactory("NXPToken");
+      nxpToken = await NXPToken.deploy();
 
       // Deploy Ocean contract
       const Ocean = await ethers.getContractFactory("Ocean");
-      ocean = await Ocean.deploy(addr1.address, tolToken.target, addr2.address);
+      ocean = await Ocean.deploy(addr1.address, nxpToken.target, addr2.address);
 
       await ocean
          .connect(addr1)
@@ -46,9 +46,9 @@ describe("Ocean", function () {
 
       it("Should boost a project", async function () {
          await ocean.setBoostRate(2);
-         await tolToken.mint(owner.address, ethers.parseEther("100"));
-         await tolToken.transfer(addr2.address, ethers.parseEther("10"));
-         await tolToken
+         await nxpToken.mint(owner.address, ethers.parseEther("100"));
+         await nxpToken.transfer(addr2.address, ethers.parseEther("10"));
+         await nxpToken
             .connect(addr2)
             .approve(ocean.target, ethers.parseEther("10"));
          await ocean

@@ -1,6 +1,6 @@
-# TOL Contract
+# NextPad Contract
 
-TOL Contract is an open-source project that serves as the core smart contract for The Open Launchpad project, designed to facilitate decentralized application (DApp) launches. This project utilizes the Hardhat framework and is written in Solidity.
+NextPad Contract is an open-source project that serves as the core smart contract for NextPad project, designed to facilitate decentralized application (DApp) launches. This project utilizes the Hardhat framework and is written in Solidity.
 
 ## Prerequisites
 
@@ -14,11 +14,11 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/toldapp/tol-contract.git
+   git clone https://github.com/nextpad/nextpad-contract.git
    ```
 2. Navigate to the project directory:
    ```sh
-   cd tol-contract
+   cd nextpad-contract
    ```
 3. Install the dependencies:
    ```sh

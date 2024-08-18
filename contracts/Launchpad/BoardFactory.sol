@@ -7,7 +7,7 @@ import "./IOcean.sol";
 import "../ERC20/IERC20.sol";
 
 contract BoardFactory is Ownable {
-    address public tolToken;
+    address public nxpToken;
     uint256 public minimumTOLRequired;
     uint256 public baseFee;
 
@@ -25,11 +25,11 @@ contract BoardFactory is Ownable {
     );
 
     constructor(
-        address _tolToken,
+        address _nxpToken,
         uint256 _baseFee,
         uint256 _minimumTOLRequired
     ) {
-        tolToken = _tolToken;
+        nxpToken = _nxpToken;
         baseFee = _baseFee;
         minimumTOLRequired = _minimumTOLRequired;
     }
@@ -55,7 +55,7 @@ contract BoardFactory is Ownable {
 
         launchpadCount++;
         Board newLaunchpad = new Board(
-            [msg.sender, tolToken, _fundedToken, address(ocean)],
+            [msg.sender, nxpToken, _fundedToken, address(ocean)],
             [
                 minimumTOLRequired,
                 _minBuy,

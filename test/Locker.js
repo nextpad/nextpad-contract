@@ -10,7 +10,7 @@ describe("Locker", function () {
       [owner, addr1, addr2] = await ethers.getSigners();
 
       // Deploy mock ERC20 token
-      Token = await ethers.getContractFactory("TOLToken");
+      Token = await ethers.getContractFactory("NXPToken");
       token = await Token.deploy();
 
       // Deploy Locker contract

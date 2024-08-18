@@ -8,7 +8,7 @@ describe("Faucet", function () {
       [owner, addr1, addr2] = await ethers.getSigners();
 
       // Deploy the ERC20 token
-      Token = await ethers.getContractFactory("TOLToken");
+      Token = await ethers.getContractFactory("NXPToken");
       token = await Token.deploy();
 
       // Deploy the Faucet

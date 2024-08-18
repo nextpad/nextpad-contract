@@ -32,7 +32,7 @@ contract Board is Ownable {
     mapping(address => uint256) public allocation;
     address[] public voters;
 
-    IERC20 public tolToken;
+    IERC20 public nxpToken;
     IERC20 public fundedToken;
     IOcean public ocean;
 
@@ -59,7 +59,7 @@ contract Board is Ownable {
      */
     constructor(
         // data1[0] _owner,
-        // data1[1] _tolToken,
+        // data1[1] _nxpToken,
         // data1[2] _fundedToken,
         // data1[3] _ocean,
 
@@ -77,12 +77,12 @@ contract Board is Ownable {
         string memory _cid
     ) {
         transferOwnership(data1[0]);
-        tolToken = IERC20(data1[1]);
+        nxpToken = IERC20(data1[1]);
         fundedToken = IERC20(data1[2]);
         ocean = IOcean(data1[3]);
 
         minimumTOLRequired = data2[0];
-        minimumHoldTime = tolToken.minimumHoldingTime();
+        minimumHoldTime = nxpToken.minimumHoldingTime();
 
         launchpad.status = Status.Pending;
         launchpad.minBuy = data2[1];
@@ -290,14 +290,14 @@ contract Board is Ownable {
     function placeTOL(uint256 _amount) external {
         require(block.timestamp >= startDate, "Presale has not started yet");
         require(launchpad.status == Status.Pending, "Launchpad is not pending");
-        uint256 firstHold = tolToken.getHoldingTime(msg.sender);
+        uint256 firstHold = nxpToken.getHoldingTime(msg.sender);
         require(
             block.timestamp >= firstHold + minimumHoldTime,
             "TOL hold time not met"
         );
         require(_amount >= 20e18, "The amount is not enough");
 
-        tolToken.transferFrom(msg.sender, address(this), _amount);
+        nxpToken.transferFrom(msg.sender, address(this), _amount);
         tolContributions[msg.sender] += _amount;
         launchpad.totalTOLPlaced += _amount;
         voters.push(msg.sender);

@@ -1,13 +1,13 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("TOLToken", () => {
-   let TOLToken, token, owner, addr1, addr2;
+describe("NXPToken", () => {
+   let NXPToken, token, owner, addr1, addr2;
 
    beforeEach(async () => {
       [owner, addr1, addr2] = await ethers.getSigners();
-      TOLToken = await ethers.getContractFactory("TOLToken");
-      token = await TOLToken.deploy();
+      NXPToken = await ethers.getContractFactory("NXPToken");
+      token = await NXPToken.deploy();
    });
 
    describe("Deployment", () => {

@@ -2,8 +2,8 @@ const { expect } = require("chai");
 const { ethers, network } = require("hardhat");
 
 describe("BoardFactory", () => {
-   let TOLToken, FundedToken, Ocean, Board, BoardFactory;
-   let tolToken, fundedToken, ocean, boardFactory;
+   let NXPToken, FundedToken, Ocean, Board, BoardFactory;
+   let nxpToken, fundedToken, ocean, boardFactory;
    let owner, addr1, addr2;
    const minBuy = ethers.parseEther("1");
    const maxBuy = ethers.parseEther("10");
@@ -21,26 +21,26 @@ describe("BoardFactory", () => {
       startDate = currentTimestamp + 60 * 60;
       deadline = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
 
-      TOLToken = await ethers.getContractFactory("TOLToken");
-      FundedToken = await ethers.getContractFactory("TOLToken");
+      NXPToken = await ethers.getContractFactory("NXPToken");
+      FundedToken = await ethers.getContractFactory("NXPToken");
       Ocean = await ethers.getContractFactory("Ocean");
       BoardFactory = await ethers.getContractFactory("BoardFactory");
 
-      tolToken = await TOLToken.deploy();
+      nxpToken = await NXPToken.deploy();
       fundedToken = await FundedToken.deploy();
       boardFactory = await BoardFactory.deploy(
-         tolToken.target,
+         nxpToken.target,
          ethers.parseEther("1"),
          minimumTOLRequired
       );
       ocean = await Ocean.deploy(
          boardFactory.target,
-         tolToken.target,
+         nxpToken.target,
          addr2.address
       );
 
       // Fund owner with initial tokens
-      await tolToken.mint(owner.address, ethers.parseEther("100000"));
+      await nxpToken.mint(owner.address, ethers.parseEther("100000"));
    });
 
    describe("BoardFactory", () => {
@@ -116,8 +116,8 @@ describe("BoardFactory", () => {
       });
 
       it("Should allow voting launchpad", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("1000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
 
@@ -127,13 +127,13 @@ describe("BoardFactory", () => {
 
          await board.connect(addr1).placeTOL(ethers.parseEther("1000"));
 
-         const balance = await tolToken.balanceOf(addr1.address);
+         const balance = await nxpToken.balanceOf(addr1.address);
          expect(balance).to.equal(ethers.parseEther("0"));
       });
 
       it("Should not allow voting launchpad for less than minimum", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("1000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
 
@@ -144,13 +144,13 @@ describe("BoardFactory", () => {
          await expect(
             board.connect(addr1).placeTOL(ethers.parseEther("10"))
          ).to.be.revertedWith("The amount is not enough");
-         const balance = await tolToken.balanceOf(addr1.address);
+         const balance = await nxpToken.balanceOf(addr1.address);
          expect(balance).to.equal(ethers.parseEther("1000"));
       });
 
       it("Should not allow buying presale before start date", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("1000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
 
@@ -160,8 +160,8 @@ describe("BoardFactory", () => {
       });
 
       it("Should allow buying presale after start date", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("1000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
 
@@ -181,8 +181,8 @@ describe("BoardFactory", () => {
       });
 
       it("Should allow token withdrawal after presale finalized", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("10000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("10000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("10000"));
 
@@ -205,8 +205,8 @@ describe("BoardFactory", () => {
       });
 
       it("Should allow refund if presale fails", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("1000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
 
@@ -230,8 +230,8 @@ describe("BoardFactory", () => {
       });
 
       it("Should allow emergency withdrawal during active presale", async () => {
-         await tolToken.mint(addr1.address, ethers.parseEther("1000"));
-         await tolToken
+         await nxpToken.mint(addr1.address, ethers.parseEther("1000"));
+         await nxpToken
             .connect(addr1)
             .approve(board.target, ethers.parseEther("1000"));
 

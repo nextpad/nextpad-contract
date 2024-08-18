@@ -32,7 +32,7 @@ import "../Common/Ownable.sol";
  * allowances. See {IERC20-approve}.
  */
 
-contract TOLToken is Context, IERC20, Ownable {
+contract NXPToken is Context, IERC20, Ownable {
     using SafeMath for uint256;
 
     mapping(address => uint256) private _balances;
@@ -44,8 +44,8 @@ contract TOLToken is Context, IERC20, Ownable {
     uint256 private _totalSupply;
     uint64 private _minimumHoldingTime;
 
-    string private _name = "The Open Launchpad";
-    string private _symbol = "TOL";
+    string private _name = "NextPad";
+    string private _symbol = "NXP";
     uint8 private _decimals = 18;
 
     /**

@@ -4,31 +4,31 @@ const hre = require("hardhat");
 async function main() {
    const deployer = await getDeployer();
 
-   const TOLToken = await hre.ethers.deployContract("TOLToken");
-   await TOLToken.waitForDeployment();
-   console.log("TOL Token contract:", TOLToken.target);
+   const NXPToken = await hre.ethers.deployContract("NXPToken");
+   await NXPToken.waitForDeployment();
+   console.log("TOL Token contract:", NXPToken.target);
 
    const Faucet = await hre.ethers.getContractFactory("Faucet");
    const faucet = await Faucet.deploy(
-      TOLToken.target,
+      NXPToken.target,
       hre.ethers.parseEther("100"),
       3600
    );
    // Mint tokens to the Faucet contract
-   await TOLToken.mint(faucet.target, ethers.parseEther("100000"));
+   await NXPToken.mint(faucet.target, ethers.parseEther("100000"));
 
-   const tx = TOLToken.deploymentTransaction();
+   const tx = NXPToken.deploymentTransaction();
    const tx2 = faucet.deploymentTransaction();
    const receipt = await hre.ethers.provider.getTransactionReceipt(tx.hash);
    const receipt2 = await hre.ethers.provider.getTransactionReceipt(tx2.hash);
 
-   console.log("======= TOLToken =======");
+   console.log("======= NXPToken =======");
    console.log("Gas used:", parseInt(receipt.gasUsed).toLocaleString());
    console.log(
       "Total fee:",
       hre.ethers.formatEther(receipt.gasUsed * receipt.gasPrice)
    );
-   console.log("Contract address:", TOLToken.target, "\n");
+   console.log("Contract address:", NXPToken.target, "\n");
 
    console.log("====== Faucet =======");
    console.log("Gas used:", parseInt(receipt2.gasUsed).toLocaleString());
