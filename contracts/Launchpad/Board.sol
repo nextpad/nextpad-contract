@@ -24,11 +24,11 @@ contract Board is Ownable {
         string cid;
         uint256 totalRaised;
         uint256 targetRaised;
-        uint256 totalTOLPlaced;
+        uint256 totalNXPPlaced;
     }
 
     uint32 public totalContributors;
-    mapping(address => uint256) public tolContributions;
+    mapping(address => uint256) public nxpContributions;
     mapping(address => uint256) public allocation;
     address[] public voters;
 
@@ -37,9 +37,9 @@ contract Board is Ownable {
     IOcean public ocean;
 
     uint256 public startDate;
-    uint256 public minimumTOLRequired;
+    uint256 public minimumNXPRequired;
     uint256 public minimumHoldTime;
-    uint256 public rewardRatePerTOL;
+    uint256 public rewardRatePerNXP;
 
     Launchpad public launchpad;
 
@@ -49,7 +49,7 @@ contract Board is Ownable {
     event Refund(address buyer, uint256 amount);
     event PresaleCancelled();
     event PresaleFinalized(uint256 totalRaised);
-    event TOLPlaced(address placer, uint256 amount);
+    event NXPPlaced(address placer, uint256 amount);
 
     /**
      * @dev Initializes the contract with the provided parameters and sets the initial state of the launchpad.
@@ -63,17 +63,18 @@ contract Board is Ownable {
         // data1[2] _fundedToken,
         // data1[3] _ocean,
 
-        // data2[0] _minimumTOLRequired,
+        // data2[0] _minimumNXPRequired,
         // data2[1] _minBuy,
         // data2[2] _maxBuy,
         // data2[3] _rates,
         // data2[4] _deadline,
         // data2[5] _targetRaised,
-        // data2[6] _rewardRatePerTOL,
+        // data2[6] _rewardRatePerNXP,
         // data2[7] _startDate,
+        // data2[8] _maxAllocation,
 
         address[4] memory data1,
-        uint256[8] memory data2,
+        uint256[9] memory data2,
         string memory _cid
     ) {
         transferOwnership(data1[0]);
@@ -81,7 +82,7 @@ contract Board is Ownable {
         fundedToken = IERC20(data1[2]);
         ocean = IOcean(data1[3]);
 
-        minimumTOLRequired = data2[0];
+        minimumNXPRequired = data2[0];
         minimumHoldTime = nxpToken.minimumHoldingTime();
 
         launchpad.status = Status.Pending;
@@ -91,7 +92,8 @@ contract Board is Ownable {
         launchpad.deadline = data2[4];
         launchpad.targetRaised = data2[5];
         launchpad.cid = _cid;
-        rewardRatePerTOL = data2[6];
+        launchpad.maxAllocation = data2[8];
+        rewardRatePerNXP = data2[6];
         startDate = data2[7];
     }
 
@@ -127,7 +129,7 @@ contract Board is Ownable {
 
     /**
      * @dev Returns the details of the current launchpad.
-     * @return The launchpad status, minBuy, maxBuy, rates, deadline, cid, totalRaised, targetRaised, and totalTOLPlaced.
+     * @return The launchpad status, minBuy, maxBuy, rates, deadline, cid, totalRaised, targetRaised, and totalNXPPlaced.
      */
     function getLaunchpadDetail()
         external
@@ -155,7 +157,7 @@ contract Board is Ownable {
             launchpad.cid,
             launchpad.totalRaised,
             launchpad.targetRaised,
-            launchpad.totalTOLPlaced
+            launchpad.totalNXPPlaced
         );
     }
 
@@ -175,12 +177,12 @@ contract Board is Ownable {
             launchpad.totalRaised + msg.value <= launchpad.targetRaised,
             "Exceeds target raised reached"
         );
+        uint256 amount = msg.value * launchpad.rates;
         require(
-            allocation[msg.sender] <= launchpad.maxAllocation,
+            allocation[msg.sender] + amount <= launchpad.maxAllocation,
             "Exceeds max allocation"
         );
 
-        uint256 amount = msg.value * launchpad.rates;
         launchpad.totalRaised += msg.value;
         allocation[msg.sender] += amount;
         totalContributors += 1;
@@ -273,7 +275,7 @@ contract Board is Ownable {
             for (uint256 i = 0; i < totalVoter; i++) {
                 fundedToken.transfer(
                     voters[i],
-                    tolContributions[voters[i]] * rewardRatePerTOL
+                    nxpContributions[voters[i]] * rewardRatePerNXP
                 );
             }
         }
@@ -282,31 +284,36 @@ contract Board is Ownable {
     }
 
     /**
-     * @dev Allows users to place TOL tokens into the launchpad if it is pending.
-     * The user's TOL token holding time must meet the minimum requirement.
-     * Emits a {TOLPlaced} event.
-     * @param _amount The amount of TOL tokens to place.
+     * @dev Allows users to place NXP tokens into the launchpad if it is pending.
+     * The user's NXP token holding time must meet the minimum requirement.
+     * Emits a {NXPPlaced} event.
+     * @param _amount The amount of NXP tokens to place.
      */
-    function placeTOL(uint256 _amount) external {
+    function voteProject(uint256 _amount) external {
         require(block.timestamp >= startDate, "Presale has not started yet");
         require(launchpad.status == Status.Pending, "Launchpad is not pending");
         uint256 firstHold = nxpToken.getHoldingTime(msg.sender);
         require(
             block.timestamp >= firstHold + minimumHoldTime,
-            "TOL hold time not met"
+            "NXP hold time not met"
         );
         require(_amount >= 20e18, "The amount is not enough");
+        uint256 amountAdded = nxpContributions[msg.sender] + _amount;
+        require(
+            amountAdded <= (minimumNXPRequired * 50) / 100,
+            "Exceeds maximum allocation per voters"
+        );
 
         nxpToken.transferFrom(msg.sender, address(this), _amount);
-        tolContributions[msg.sender] += _amount;
-        launchpad.totalTOLPlaced += _amount;
+        nxpContributions[msg.sender] += _amount;
+        launchpad.totalNXPPlaced += _amount;
         voters.push(msg.sender);
 
-        if (launchpad.totalTOLPlaced >= minimumTOLRequired) {
+        if (launchpad.totalNXPPlaced >= minimumNXPRequired) {
             launchpad.status = Status.Active;
         }
 
-        emit TOLPlaced(msg.sender, _amount);
+        emit NXPPlaced(msg.sender, _amount);
     }
 
     /**

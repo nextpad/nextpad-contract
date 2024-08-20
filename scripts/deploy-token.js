@@ -6,7 +6,6 @@ async function main() {
 
    const NXPToken = await hre.ethers.deployContract("NXPToken");
    await NXPToken.waitForDeployment();
-   console.log("TOL Token contract:", NXPToken.target);
 
    const Faucet = await hre.ethers.getContractFactory("Faucet");
    const faucet = await Faucet.deploy(

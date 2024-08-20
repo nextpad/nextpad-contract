@@ -48,7 +48,8 @@ contract BoardFactory is Ownable {
         uint256 _targetRaised,
         uint256 _rewardRatePerTOL,
         string memory _cid,
-        uint256 _allocation
+        uint256 _allocation,
+        uint256 _maxAllocation
     ) public payable returns (bool) {
         require(msg.value >= baseFee, "Not enough fee");
         require(_minBuy > 0 && _maxBuy > _minBuy, "Invalid buy limits");
@@ -64,7 +65,8 @@ contract BoardFactory is Ownable {
                 _deadline,
                 _targetRaised,
                 _rewardRatePerTOL,
-                _startSale
+                _startSale,
+                _maxAllocation
             ],
             _cid
         );

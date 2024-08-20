@@ -1,9 +1,9 @@
 const getDeployer = require("./deployer");
 const hre = require("hardhat");
 
-const TOL = "0x51eF9Ae8f376A39A8fd18D96888c7Dc05C703747";
+const TOL = "0xB112116901C943E22fB4C10d685A607d320c6ca0";
 const baseFee = "0.1";
-const requiredTOL = "50";
+const requiredTOL = "150";
 
 async function main() {
    const deployer = await getDeployer();
@@ -15,10 +15,12 @@ async function main() {
       hre.ethers.parseEther(baseFee),
       hre.ethers.parseEther(requiredTOL)
    );
+   await factory.waitForDeployment();
 
    // Deploy Ocean
    const Ocean = await hre.ethers.getContractFactory("Ocean");
    const ocean = await Ocean.deploy(factory.target, TOL, deployer);
+   await ocean.waitForDeployment();
 
    // update ocean address
    await factory.updateOceanInstance(ocean.target);
