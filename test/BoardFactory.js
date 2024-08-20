@@ -107,6 +107,16 @@ describe("BoardFactory and Board", () => {
          expect(await nxpToken.balanceOf(addr1.address)).to.equal(0);
       });
 
+      it("Should not allow voting launchpad for the owner", async () => {
+         await mintAndApproveNXP(owner, ethers.parseEther("1000"));
+
+         await advanceTime(HOUR + 1);
+
+         await expect(
+            board.connect(owner).voteProject(ethers.parseEther("20"))
+         ).to.be.revertedWith("Owner not allowed");
+      });
+
       it("Should not allow voting launchpad for less than minimum", async () => {
          await mintAndApproveNXP(addr1, ethers.parseEther("1000"));
 
@@ -156,6 +166,20 @@ describe("BoardFactory and Board", () => {
          await expect(
             board.connect(addr1).buyPresale({ value: ethers.parseEther("2") })
          ).to.be.revertedWith("Exceeds max allocation");
+      });
+
+      it("Should not allow buying presale for the owner", async () => {
+         await mintAndApproveNXP(addr1, ethers.parseEther("1000"));
+         await mintAndApproveNXP(addr2, ethers.parseEther("1000"));
+
+         await advanceTime(HOUR + 1);
+
+         await board.connect(addr1).voteProject(ethers.parseEther("500"));
+         await board.connect(addr2).voteProject(ethers.parseEther("500"));
+
+         await expect(
+            board.connect(owner).buyPresale({ value: ethers.parseEther("2") })
+         ).to.be.revertedWith("Owner not allowed");
       });
 
       it("Should allow token withdrawal after presale finalized", async () => {

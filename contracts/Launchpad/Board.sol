@@ -169,6 +169,7 @@ contract Board is Ownable {
         require(block.timestamp >= startDate, "Presale has not started yet");
         require(launchpad.status == Status.Active, "Presale is not active");
         require(block.timestamp < launchpad.deadline, "Presale has ended");
+        require(msg.sender != owner(), "Owner not allowed");
         require(
             msg.value >= launchpad.minBuy && msg.value <= launchpad.maxBuy,
             "Invalid amount"
@@ -292,6 +293,7 @@ contract Board is Ownable {
     function voteProject(uint256 _amount) external {
         require(block.timestamp >= startDate, "Presale has not started yet");
         require(launchpad.status == Status.Pending, "Launchpad is not pending");
+        require(msg.sender != owner(), "Owner not allowed");
         uint256 firstHold = nxpToken.getHoldingTime(msg.sender);
         require(
             block.timestamp >= firstHold + minimumHoldTime,
