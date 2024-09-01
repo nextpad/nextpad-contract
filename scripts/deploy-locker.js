@@ -7,6 +7,7 @@ async function main() {
    // Deploy Locker contract
    const Locker = await ethers.getContractFactory("Locker");
    const locker = await Locker.deploy();
+   await locker.waitForDeployment();
 
    const tx = locker.deploymentTransaction();
    const receipt = await hre.ethers.provider.getTransactionReceipt(tx.hash);

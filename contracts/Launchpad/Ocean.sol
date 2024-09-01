@@ -36,7 +36,7 @@ contract Ocean is Ownable {
     );
 
     address public factoryAddress;
-    address public tolAddress;
+    address public nxpAddress;
     address public treasuryAddress;
 
     modifier onlyProjectOwner(address _ca) {
@@ -67,7 +67,7 @@ contract Ocean is Ownable {
      */
     constructor(address factory, address token, address _treasuryAddress) {
         factoryAddress = factory;
-        tolAddress = token;
+        nxpAddress = token;
         treasuryAddress = _treasuryAddress;
     }
 
@@ -134,19 +134,19 @@ contract Ocean is Ownable {
     /**
      * @dev Boosts a project by spending TOL tokens
      * @param _ca The ID of the project to boost
-     * @param _tolAmount The amount of TOL tokens to spend on boosting
+     * @param _nxpAmount The amount of TOL tokens to spend on boosting
      */
-    function boostProject(address _ca, uint256 _tolAmount) external {
+    function boostProject(address _ca, uint256 _nxpAmount) external {
         require(!projects[_ca].isTerminated, "Project is terminated");
-        require(_tolAmount > 0, "TOL amount cannot be zero");
+        require(_nxpAmount > 0, "NXP amount cannot be zero");
 
-        IERC20(tolAddress).transferFrom(
+        IERC20(nxpAddress).transferFrom(
             msg.sender,
             treasuryAddress,
-            _tolAmount
+            _nxpAmount
         );
 
-        uint256 boosted = _tolAmount.div(10 ** 18) / boostRate;
+        uint256 boosted = _nxpAmount.div(10 ** 18) / boostRate;
         projects[_ca].boostPoint += boosted;
 
         emit ProjectBoosted(_ca, msg.sender, projects[_ca].boostPoint);

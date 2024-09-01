@@ -10,9 +10,9 @@ module.exports = {
          chainId: 11155111,
          accounts: [process.env.PRIVATE_KEY],
       },
-      core: {
-         url: process.env.RPC_CORE,
-         chainId: 1115,
+      edu: {
+         url: process.env.RPC_OPENCAMPUS,
+         chainId: 656476,
          accounts: [process.env.PRIVATE_KEY],
       },
    },
